@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>祂说 · SAYS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --surface-2: #f4f4f4;
+    --ink: #0a0a0a;
+    --ink-2: #1a1a1a;
+    --muted: #737373;
+    --muted-2: #a3a3a3;
+    --line: #e5e5e5;
+    --line-2: #d4d4d4;
+    --accent: #0a0a0a;
+    --accent-inv: #ffffff;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-theme="dark"] {
+    --bg: #0a0a0a;
+    --surface: #121212;
+    --surface-2: #1a1a1a;
+    --ink: #fafafa;
+    --ink-2: #e5e5e5;
+    --muted: #737373;
+    --muted-2: #525252;
+    --line: #262626;
+    --line-2: #333333;
+    --accent: #fafafa;
+    --accent-inv: #0a0a0a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', 'Noto Serif SC', sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.6s var(--ease), color 0.6s var(--ease);
+    cursor: default;
+}
+::selection { background: var(--ink); color: var(--bg); }
+
+button, input { font-family: inherit; color: inherit; }
+
+/* ============ SVG 图标 ============ */
+.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.icon-lg { width: 20px; height: 20px; }
+
+/* ============ 开场动画 ============ */
+#intro-screen {
+    position: fixed; inset: 0; z-index: 99999;
+    background: var(--bg);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 1s var(--ease), transform 1.2s var(--ease);
+}
+#intro-screen.fade-out { opacity: 0; transform: scale(1.05); pointer-events: none; }
+.intro-logo { width: 60px; height: 60px; margin-bottom: 28px; }
+.intro-logo path { stroke: var(--ink); stroke-width: 1.2; fill: none; stroke-dasharray: 200; stroke-dashoffset: 200; animation: drawLogo 1.8s var(--ease) forwards; }
+@keyframes drawLogo { to { stroke-dashoffset: 0; } }
+.intro-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 40px; font-weight: 500; letter-spacing: 12px;
+    color: var(--ink); overflow: hidden; white-space: nowrap;
+    border-right: 1px solid var(--ink);
+    width: 0; animation: typeIntro 1.2s 0.8s steps(3) forwards, blinkCursor 0.7s 0.8s 3;
+}
+@keyframes typeIntro { to { width: 4.5em; } }
+@keyframes blinkCursor { 50% { border-color: transparent; } }
+.intro-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 6px; color: var(--muted);
+    margin-top: 20px; opacity: 0;
+    animation: fadeUp 0.8s 2.4s var(--ease) forwards;
+}
+.intro-meta {
+    position: absolute; bottom: 32px; left: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; color: var(--muted-2);
+    opacity: 0; animation: fadeUp 0.8s 2.6s var(--ease) forwards;
+}
+.intro-meta-right {
+    position: absolute; bottom: 32px; right: 32px; text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; color: var(--muted-2);
+    opacity: 0; animation: fadeUp 0.8s 2.6s var(--ease) forwards;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============ 主界面入场 ============ */
+.app { opacity: 0; transition: opacity 0.8s var(--ease); }
+.app.ready { opacity: 1; }
+.app.ready .top-nav > * { animation: slideDown 0.8s var(--ease) backwards; }
+.app.ready .top-nav > *:nth-child(1) { animation-delay: 0.1s; }
+.app.ready .top-nav > *:nth-child(2) { animation-delay: 0.2s; }
+.app.ready .dock-container { animation: slideUp 0.8s 0.3s var(--ease) backwards; }
+.app.ready .altar-ring { animation: scaleIn 1.2s 0.2s var(--ease) backwards; }
+.app.ready .side-log { animation: slideInRight 0.8s 0.4s var(--ease) backwards; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+
+/* ============ 网格底纹 ============ */
+.grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.4;
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+}
+
+/* ============ 顶栏 ============ */
+.top-nav {
+    position: fixed; top: 0; left: 0; width: 100%;
+    padding: 24px 32px; z-index: 50;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.brand {
+    display: flex; align-items: center; gap: 14px;
+    font-family: 'Noto Serif SC', serif;
+}
+.brand-mark { width: 22px; height: 22px; stroke: var(--ink); fill: none; stroke-width: 1.5; }
+.brand-text {
+    font-size: 15px; font-weight: 500; letter-spacing: 8px;
+}
+.brand-divider { width: 1px; height: 14px; background: var(--line-2); }
+.brand-ver {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; color: var(--muted);
+}
+
+.nav-right { display: flex; align-items: center; gap: 8px; }
+
+.progress-ring-wrap {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 14px 0 8px; height: 34px;
+    border: 1px solid var(--line); border-radius: 100px;
+    transition: 0.3s var(--ease);
+}
+.progress-ring-wrap:hover { border-color: var(--ink); }
+.progress-ring { width: 20px; height: 20px; transform: rotate(-90deg); }
+.progress-ring circle { fill: none; stroke-width: 2; }
+.progress-ring .track { stroke: var(--line); }
+.progress-ring .bar { stroke: var(--ink); stroke-linecap: round; transition: stroke-dashoffset 0.6s var(--ease); }
+.progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1px; color: var(--muted);
+}
+.progress-label b { color: var(--ink); font-weight: 500; }
+
+.icon-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid var(--line); background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--ink);
+    transition: 0.3s var(--ease);
+}
+.icon-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.text-btn {
+    height: 34px; padding: 0 16px; border-radius: 100px;
+    border: 1px solid var(--line); background: transparent;
+    font-size: 12px; letter-spacing: 2px; color: var(--ink);
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: 0.3s var(--ease);
+}
+.text-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.text-btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.text-btn.primary:hover { background: transparent; color: var(--ink); }
+
+.kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; padding: 2px 5px; border: 1px solid currentColor;
+    border-radius: 3px; opacity: 0.6; letter-spacing: 0;
+}
+
+/* ============ 主舞台 ============ */
+#stage {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+}
+.altar-ring {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 44px;
+    padding: 80px;
+}
+.altar-ring::before, .altar-ring::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%); border-radius: 50%;
+    border: 1px solid var(--line);
+    transition: border-color 0.8s var(--ease);
+}
+.altar-ring::before { width: 420px; height: 420px; }
+.altar-ring::after { width: 560px; height: 560px; border-style: dashed; opacity: 0.6; }
+.altar-ring.evolved::before { border-color: var(--ink); }
+.altar-ring.evolved::after { border-color: var(--ink-2); opacity: 0.4; }
+
+/* 同心旋转装饰 */
+.ring-orbit {
+    position: absolute; left: 50%; top: 50%;
+    width: 560px; height: 560px;
+    transform: translate(-50%, -50%);
+    animation: rotate 60s linear infinite;
+    pointer-events: none;
+}
+.ring-orbit::before, .ring-orbit::after {
+    content: ''; position: absolute;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--ink);
+}
+.ring-orbit::before { top: 0; left: 50%; transform: translateX(-50%); }
+.ring-orbit::after { bottom: 0; right: 50%; transform: translateX(50%); opacity: 0.4; }
+@keyframes rotate { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+.stage-label {
+    position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 4px; color: var(--muted);
+    padding: 0 16px; background: var(--bg);
+    white-space: nowrap;
+}
+
+.altar-slots {
+    display: flex; align-items: center; gap: 24px;
+    position: relative;
+}
+.altar-divider {
+    width: 32px; height: 1px; background: var(--line-2);
+    position: relative;
+}
+.altar-divider::after {
+    content: '+'; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    background: var(--bg); padding: 0 4px;
+}
+.slot {
+    width: 120px; height: 120px; border-radius: 2px;
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; transition: 0.4s var(--ease);
+}
+.slot::before {
+    content: ''; position: absolute; inset: 6px;
+    border: 1px dashed var(--line-2); opacity: 0.5;
+    transition: 0.3s var(--ease);
+}
+.slot-corner { position: absolute; width: 10px; height: 10px; border: 1px solid var(--muted); transition: 0.3s var(--ease); }
+.slot-corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.slot-corner.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+.slot-corner.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+.slot-corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.slot-text {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px; font-weight: 500; letter-spacing: 3px;
+    color: var(--ink); z-index: 1;
+}
+.slot-index {
+    position: absolute; top: 8px; left: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--muted);
+}
+.slot.filled { border-color: var(--ink); cursor: pointer; }
+.slot.filled::before { border-color: var(--ink); opacity: 0.3; }
+.slot.filled .slot-corner { border-color: var(--ink); }
+.slot.snap {
+    border-color: var(--ink); transform: scale(1.04);
+    box-shadow: 0 0 0 4px var(--bg), 0 0 0 5px var(--ink);
+}
+.slot.snap .slot-corner { border-color: var(--ink); }
+
+.altar-action {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+    transition: 0.5s var(--ease);
+}
+.altar-action.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.synth-btn {
+    height: 44px; padding: 0 36px; border-radius: 0;
+    background: var(--ink); color: var(--bg); border: none;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px; letter-spacing: 6px; font-weight: 500;
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: 0.3s var(--ease);
+}
+.synth-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--bg); transform: translateY(100%);
+    transition: 0.4s var(--ease);
+}
+.synth-btn:hover::before { transform: translateY(0); }
+.synth-btn span { position: relative; z-index: 1; transition: 0.3s var(--ease); }
+.synth-btn:hover span { color: var(--ink); }
+.synth-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 2px; color: var(--muted);
+}
+
+/* 合成动画 */
+@keyframes slotMergeL { to { transform: translateX(72px) scale(0); opacity: 0; } }
+@keyframes slotMergeR { to { transform: translateX(-72px) scale(0); opacity: 0; } }
+.slot-merge-l { animation: slotMergeL 1s var(--ease-in) forwards; }
+.slot-merge-r { animation: slotMergeR 1s var(--ease-in) forwards; }
+
+.merge-flash {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 0; height: 0; border-radius: 50%;
+    background: var(--ink); z-index: 999; pointer-events: none;
+}
+.merge-flash.active { animation: flashRipple 1.4s var(--ease) forwards; }
+@keyframes flashRipple {
+    0% { width: 0; height: 0; opacity: 1; }
+    40% { width: 100vmax; height: 100vmax; opacity: 1; }
+    100% { width: 100vmax; height: 100vmax; opacity: 0; }
+}
+
+/* ============ 冰晶 ============ */
+.crystal {
+    position: absolute; width: 28px; height: 28px;
+    cursor: pointer; z-index: 3;
+    transition: filter 0.3s var(--ease);
+    will-change: transform;
+}
+.crystal svg { width: 100%; height: 100%; overflow: visible; }
+.crystal svg polygon { fill: var(--bg); stroke: var(--ink); stroke-width: 1.2; transition: 0.3s var(--ease); }
+.crystal:hover svg polygon { fill: var(--ink); }
+.crystal.decaying svg polygon { animation: crystalDecay 0.8s infinite alternate; }
+@keyframes crystalDecay { to { stroke: var(--muted); opacity: 0.4; } }
+
+.shatter-p {
+    position: absolute; width: 3px; height: 3px;
+    background: var(--ink); pointer-events: none;
+    z-index: 4; border-radius: 0;
+}
+
+/* 点击涟漪 */
+.click-ripple {
+    position: fixed; border: 1px solid var(--ink);
+    border-radius: 50%; pointer-events: none; z-index: 9998;
+    animation: clickRipple 0.8s var(--ease) forwards;
+}
+@keyframes clickRipple {
+    from { width: 0; height: 0; opacity: 0.6; }
+    to { width: 40px; height: 40px; opacity: 0; transform: translate(-20px, -20px); }
+}
+
+/* ============ 侧边日志 ============ */
+.side-log {
+    position: fixed; top: 90px; right: 32px; width: 220px;
+    z-index: 10; pointer-events: none;
+}
+.side-log-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 3px; color: var(--muted);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.side-log-title::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--ink); border-radius: 50%;
+    animation: pulseDot 2s infinite;
+}
+@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.log-list { display: flex; flex-direction: column; gap: 2px; }
+.log-entry {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 11px; line-height: 1.6; color: var(--ink);
+    padding: 8px 0; border-top: 1px solid var(--line);
+    opacity: 0; animation: fadeIn 0.6s var(--ease) forwards;
+}
+.log-entry.empty { color: var(--muted); font-style: italic; border: none; }
+.log-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--muted); display: block; margin-bottom: 2px;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+
+/* ============ Dock ============ */
+.dock-container {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    z-index: 10; width: min(88vw, 720px);
+}
+.dock-inner {
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 12px 16px; display: flex; align-items: center; gap: 16px;
+    transition: 0.3s var(--ease);
+}
+.dock-inner:hover { border-color: var(--line-2); }
+.dock-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 2px; color: var(--muted);
+    flex-shrink: 0; padding-right: 12px; border-right: 1px solid var(--line);
+}
+.dock-list {
+    display: flex; gap: 8px; overflow-x: auto;
+    scrollbar-width: none; flex: 1; min-height: 32px; align-items: center;
+}
+.dock-list::-webkit-scrollbar { display: none; }
+.dock-empty {
+    font-size: 11px; color: var(--muted);
+    font-family: 'Noto Serif SC', serif; font-style: italic;
+    padding: 4px 0;
+}
+.fragment {
+    flex-shrink: 0;
+    padding: 7px 14px; background: transparent;
+    border: 1px solid var(--ink); color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px; font-weight: 500; letter-spacing: 2px;
+    cursor: grab; white-space: nowrap;
+    transition: 0.25s var(--ease);
+    animation: fragIn 0.5s var(--ease);
+}
+@keyframes fragIn { from { opacity: 0; transform: translateY(8px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.fragment:hover { background: var(--ink); color: var(--bg); transform: translateY(-2px); }
+.fragment:active { cursor: grabbing; }
+.fragment.dragging {
+    position: fixed; z-index: 10000; pointer-events: none;
+    background: var(--ink); color: var(--bg);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    transform: scale(1.05);
+}
+.dock-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    padding-left: 12px; border-left: 1px solid var(--line);
+}
+.dock-count.full { color: var(--danger); }
+
+/* ============ 模态框（窗帘式） ============ */
+.hidden { display: none !important; }
+.modal {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.8s var(--ease);
+}
+.modal.open { clip-path: inset(0 0 0 0); }
+.modal-header {
+    padding: 24px 32px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--line);
+}
+.modal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 4px; color: var(--muted);
+    display: flex; align-items: center; gap: 10px;
+}
+.modal-body {
+    flex: 1; overflow-y: auto; padding: 48px 32px;
+    display: flex; flex-direction: column; align-items: center;
+}
+
+/* 解码 */
+.decode-wrap { max-width: 720px; width: 100%; text-align: center; margin-top: 10vh; }
+.decode-status {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 4px; color: var(--muted);
+    padding: 6px 14px; border: 1px solid var(--line);
+    border-radius: 100px; margin-bottom: 40px;
+}
+.decode-status::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ink); animation: pulseDot 1.4s infinite;
+}
+.decode-text {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 28px; line-height: 1.9; font-weight: 400;
+    color: var(--ink); margin-bottom: 56px;
+    transition: filter 0.8s var(--ease);
+}
+.decode-text.blur { filter: blur(10px); opacity: 0.3; }
+.blank {
+    display: inline-block; min-width: 90px;
+    border-bottom: 1.5px solid var(--ink);
+    padding: 0 8px; position: relative;
+}
+.blank.filled {
+    color: var(--ink); font-weight: 600;
+    border-bottom: none;
+    animation: blankReveal 0.8s var(--ease);
+}
+@keyframes blankReveal { 0% { opacity: 0; letter-spacing: 20px; filter: blur(8px); } 100% { opacity: 1; letter-spacing: normal; filter: blur(0); } }
+.decode-options { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.opt-btn {
+    padding: 14px 28px; background: transparent;
+    border: 1px solid var(--ink); color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px; letter-spacing: 3px; font-weight: 500;
+    cursor: pointer; transition: 0.3s var(--ease);
+    opacity: 0; transform: translateY(12px);
+    animation: fadeUp 0.5s var(--ease) forwards;
+    position: relative; overflow: hidden;
+}
+.opt-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--ink); transform: translateY(100%);
+    transition: 0.3s var(--ease);
+}
+.opt-btn span { position: relative; z-index: 1; transition: color 0.3s var(--ease); }
+.opt-btn:hover::before { transform: translateY(0); }
+.opt-btn:hover span { color: var(--bg); }
+
+/* 故事 */
+.story-wrap { max-width: 640px; width: 100%; }
+.story-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 3px; color: var(--muted);
+    margin-bottom: 16px;
+}
+.story-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 36px; font-weight: 500; letter-spacing: 4px;
+    color: var(--ink); margin-bottom: 40px;
+    padding-bottom: 24px; border-bottom: 1px solid var(--line);
+}
+.story-body {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px; line-height: 2.1; font-weight: 400;
+    color: var(--ink-2); min-height: 200px;
+}
+.story-body p { margin-bottom: 20px; }
+.type-cursor::after {
+    content: '▮'; display: inline-block;
+    color: var(--ink); margin-left: 2px;
+    animation: blink 0.7s infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+.story-footer {
+    margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    opacity: 0; animation: fadeUp 0.8s 0.3s var(--ease) forwards;
+}
+
+/* 集合视图 */
+.col-tabs { display: flex; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: 100px; }
+.tab {
+    padding: 6px 18px; border: none; background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    cursor: pointer; border-radius: 100px;
+    transition: 0.3s var(--ease);
+}
+.tab.active { background: var(--ink); color: var(--bg); }
+.col-body { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 24px; overflow: hidden; display: flex; flex-direction: column; }
+#map-view { flex: 1; border: 1px solid var(--line); position: relative; }
+#constellation { width: 100%; height: 100%; display: block; }
+.map-tooltip {
+    position: absolute; background: var(--ink); color: var(--bg);
+    padding: 6px 12px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 11px; letter-spacing: 2px;
+    transform: translate(-50%, -140%);
+    pointer-events: none; white-space: nowrap;
+    transition: opacity 0.2s;
+}
+.map-tooltip::after {
+    content: ''; position: absolute;
+    left: 50%; top: 100%; transform: translateX(-50%);
+    border: 4px solid transparent; border-top-color: var(--ink);
+}
+
+#archive-view {
+    flex: 1; overflow-y: auto; padding: 4px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px; align-content: start;
+}
+.archive-card {
+    padding: 20px; border: 1px solid var(--line);
+    background: var(--surface); cursor: pointer;
+    transition: 0.3s var(--ease); position: relative;
+}
+.archive-card:hover { border-color: var(--ink); transform: translateY(-2px); }
+.archive-card .idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--muted); letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+.archive-card h4 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px; font-weight: 500; letter-spacing: 2px;
+    color: var(--ink); margin-bottom: 10px;
+}
+.archive-card p {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px; line-height: 1.8; color: var(--muted);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.archive-empty {
+    grid-column: 1/-1; text-align: center; padding: 80px 20px;
+    color: var(--muted); font-family: 'Noto Serif SC', serif;
+    font-style: italic;
+}
+
+/* 时间轴 */
+#timeline-view { flex: 1; overflow-y: auto; padding: 20px; }
+.tl-item {
+    display: grid; grid-template-columns: 100px 1fr;
+    gap: 20px; padding: 16px 0; border-top: 1px solid var(--line);
+    cursor: pointer; transition: 0.3s var(--ease);
+}
+.tl-item:hover { background: var(--surface-2); }
+.tl-item:hover h4 { text-decoration: underline; }
+.tl-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; padding-top: 4px; }
+.tl-item h4 { font-family: 'Noto Serif SC', serif; font-size: 15px; margin-bottom: 6px; font-weight: 500; letter-spacing: 2px; }
+.tl-item p { font-family: 'Noto Serif SC', serif; font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+/* ============ Toast ============ */
+.toast-wrap {
+    position: fixed; top: 90px; left: 50%; transform: translateX(-50%);
+    z-index: 2000; display: flex; flex-direction: column; gap: 8px;
+    pointer-events: none;
+}
+.toast {
+    display: flex; align-items: stretch;
+    background: var(--surface); border: 1px solid var(--ink);
+    min-width: 280px; max-width: 380px;
+    animation: toastIn 0.5s var(--ease), toastOut 0.5s 3.5s var(--ease) forwards;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+.toast-bar { width: 4px; background: var(--ink); flex-shrink: 0; }
+.toast-icon {
+    width: 44px; display: flex; align-items: center; justify-content: center;
+    border-right: 1px solid var(--line); color: var(--ink);
+}
+.toast-body { padding: 12px 16px; flex: 1; }
+.toast-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 2px; color: var(--muted);
+    margin-bottom: 4px;
+}
+.toast-msg {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px; color: var(--ink); letter-spacing: 1px;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(-16px); } }
+
+/* ============ 命令面板 ============ */
+.cmdk {
+    position: fixed; inset: 0; z-index: 5000;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+    display: flex; justify-content: center; align-items: flex-start;
+    padding-top: 15vh;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s var(--ease);
+}
+.cmdk.open { opacity: 1; pointer-events: auto; }
+.cmdk-panel {
+    width: min(560px, 90vw); background: var(--surface);
+    border: 1px solid var(--line);
+    transform: translateY(-20px); transition: transform 0.4s var(--ease);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+}
+.cmdk.open .cmdk-panel { transform: translateY(0); }
+.cmdk-search {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+}
+.cmdk-search input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 15px; color: var(--ink);
+    font-family: inherit;
+}
+.cmdk-search input::placeholder { color: var(--muted); }
+.cmdk-list { max-height: 400px; overflow-y: auto; }
+.cmdk-item {
+    padding: 11px 20px; display: flex; align-items: center; gap: 12px;
+    cursor: pointer; font-size: 13px; color: var(--ink);
+    border-left: 2px solid transparent;
+    transition: 0.15s var(--ease);
+}
+.cmdk-item.active { background: var(--surface-2); border-left-color: var(--ink); }
+.cmdk-item .cmd-kbd {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; padding: 2px 6px;
+    border: 1px solid var(--line-2); border-radius: 3px;
+    color: var(--muted); letter-spacing: 0;
+}
+.cmdk-foot {
+    padding: 10px 20px; border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--muted); letter-spacing: 1px;
+    display: flex; gap: 16px;
+}
+
+/* ============ 菜单下拉 ============ */
+.menu-pop {
+    position: fixed; background: var(--surface);
+    border: 1px solid var(--line);
+    min-width: 220px; padding: 4px; z-index: 200;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    transform-origin: top right;
+    animation: menuIn 0.25s var(--ease);
+}
+@keyframes menuIn { from { opacity: 0; transform: scale(0.95) translateY(-4px); } }
+.menu-pop h6 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 2px; color: var(--muted);
+    padding: 10px 12px 6px; font-weight: 400;
+}
+.menu-pop button {
+    width: 100%; background: transparent; border: none;
+    padding: 9px 12px; display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--ink); cursor: pointer; text-align: left;
+    transition: 0.15s var(--ease);
+}
+.menu-pop button:hover { background: var(--surface-2); }
+.menu-pop button.danger { color: var(--danger); }
+.menu-pop hr { border: none; border-top: 1px solid var(--line); margin: 4px 0; }
+
+/* ============ 响应式 ============ */
+@media (max-width: 900px) {
+    .side-log { display: none; }
+    .altar-ring::before { width: 320px; height: 320px; }
+    .altar-ring::after { width: 420px; height: 420px; }
+    .ring-orbit { width: 420px; height: 420px; }
+    .slot { width: 96px; height: 96px; }
+    .slot-text { font-size: 14px; }
+    .decode-text { font-size: 22px; }
+    .story-title { font-size: 26px; }
+    .top-nav { padding: 16px 20px; }
+    .progress-ring-wrap { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SVG 图标库 ============ -->
+<svg width="0" height="0" style="position:absolute">
+<defs>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
+  <symbol id="i-crystal" viewBox="0 0 24 24"><polygon points="12 2 4 9 12 22 20 9"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="12" y1="2" x2="12" y2="22"/></symbol>
+  <symbol id="i-network" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="6.4" y1="6.4" x2="10.6" y2="10.6"/><line x1="17.6" y1="6.4" x2="13.4" y2="10.6"/><line x1="6.4" y1="17.6" x2="10.6" y2="13.4"/><line x1="17.6" y1="17.6" x2="13.4" y2="13.4"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></symbol>
+  <symbol id="i-brand" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></symbol>
+</defs>
+</svg>
+
+<!-- ============ 开场 ============ -->
+<div id="intro-screen">
+    <svg class="intro-logo" viewBox="0 0 60 60"><path d="M30 5 L55 30 L30 55 L5 30 Z M30 5 L30 55 M5 30 L55 30"/></svg>
+    <div class="intro-title">祂说</div>
+    <div class="intro-sub">SAYS · v4.0</div>
+    <div class="intro-meta">SYS: initializing<br>CHANNEL: open<br>READY</div>
+    <div class="intro-meta-right">MODE — MONOCHROME<br>TYPE — INTERACTIVE<br>© 2025</div>
+</div>
+
+<div class="grid-bg"></div>
+
+<!-- ============ 主界面 ============ -->
+<div class="app" id="app">
+
+<header class="top-nav">
+    <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 24 24"><path d="M12 2L22 12L12 22L2 12Z M12 2v20 M2 12h20" stroke-width="1.2" fill="none"/></svg>
+        <span class="brand-text">祂说</span>
+        <span class="brand-divider"></span>
+        <span class="brand-ver">SAYS / v4.0</span>
+    </div>
+    <div class="nav-right">
+        <div class="progress-ring-wrap" title="发现进度">
+            <svg class="progress-ring" viewBox="0 0 20 20">
+                <circle class="track" cx="10" cy="10" r="8"/>
+                <circle class="bar" id="prog-bar" cx="10" cy="10" r="8" stroke-dasharray="50.26" stroke-dashoffset="50.26"/>
+            </svg>
+            <span class="progress-label"><b id="prog-num">0</b>/<span id="prog-total">0</span></span>
+        </div>
+        <button class="icon-btn" id="btn-theme" title="切换主题 (T)"><svg class="icon"><use href="#i-moon"/></svg></button>
+        <button class="icon-btn" id="btn-sound" title="音效 (M)"><svg class="icon"><use href="#i-sound"/></svg></button>
+        <button class="icon-btn" id="btn-cmdk" title="命令面板 (⌘K)"><svg class="icon"><use href="#i-search"/></svg></button>
+        <button class="text-btn" id="btn-collection"><svg class="icon"><use href="#i-network"/></svg>记忆星网</button>
+        <button class="icon-btn" id="btn-menu" title="菜单"><svg class="icon"><use href="#i-menu"/></svg></button>
+    </div>
+</header>
+
+<main id="stage">
+    <div class="altar-ring" id="altar-ring">
+        <div class="ring-orbit"></div>
+        <div class="stage-label">— ALTAR / 祭坛 —</div>
+        <div class="altar-slots" id="altar-slots">
+            <div class="slot" id="slot-1" data-slot="1">
+                <span class="slot-corner tl"></span><span class="slot-corner tr"></span>
+                <span class="slot-corner bl"></span><span class="slot-corner br"></span>
+                <span class="slot-index">01</span>
+            </div>
+            <div class="altar-divider"></div>
+            <div class="slot" id="slot-2" data-slot="2">
+                <span class="slot-corner tl"></span><span class="slot-corner tr"></span>
+                <span class="slot-corner bl"></span><span class="slot-corner br"></span>
+                <span class="slot-index">02</span>
+            </div>
+        </div>
+        <div class="altar-action" id="altar-action">
+            <button class="synth-btn" id="btn-synth"><span>重 组 链 路</span></button>
+            <span class="synth-hint">RECOMBINE — 或按 Enter</span>
+        </div>
+    </div>
+</main>
+
+<aside class="side-log">
+    <div class="side-log-title">RECENT ECHOES</div>
+    <div class="log-list" id="log-list">
+        <div class="log-entry empty">暂无回响记录</div>
+    </div>
+</aside>
+
+<footer class="dock-container">
+    <div class="dock-inner">
+        <span class="dock-label">FRAGMENTS</span>
+        <div class="dock-list" id="dock-list">
+            <div class="dock-empty">等待晶体析出</div>
+        </div>
+        <span class="dock-count" id="dock-count">0 / 7</span>
+    </div>
+</footer>
+
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- 合成闪光 -->
+<div class="merge-flash" id="merge-flash"></div>
+
+<!-- 命令面板 -->
+<div class="cmdk" id="cmdk">
+    <div class="cmdk-panel">
+        <div class="cmdk-search">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input type="text" id="cmdk-input" placeholder="搜索命令或输入操作..." autocomplete="off">
+            <span class="kbd" style="padding:2px 5px;border:1px solid var(--line-2);border-radius:3px;color:var(--muted);">ESC</span>
+        </div>
+        <div class="cmdk-list" id="cmdk-list"></div>
+        <div class="cmdk-foot">
+            <span>↑↓ 选择</span><span>↵ 执行</span><span>ESC 关闭</span>
+        </div>
+    </div>
+</div>
+
+<!-- 解码 -->
+<div class="modal" id="modal-decrypt">
+    <div class="modal-header">
+        <div class="modal-title"><svg class="icon"><use href="#i-crystal"/></svg>SIGNAL DECODE / 信号解析</div>
+        <button class="icon-btn" onclick="closeModal('modal-decrypt')"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="modal-body">
+        <div class="decode-wrap">
+            <div class="decode-status">ANALYZING</div>
+            <p class="decode-text blur" id="decode-text"></p>
+            <div class="decode-options" id="decode-options"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 故事 -->
+<div class="modal" id="modal-story">
+    <div class="modal-header">
+        <div class="modal-title"><svg class="icon"><use href="#i-book"/></svg>NARRATIVE / 共鸣叙事</div>
+        <button class="icon-btn" onclick="closeModal('modal-story')"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="modal-body">
+        <div class="story-wrap">
+            <div class="story-meta" id="story-meta">CHAPTER 001</div>
+            <h1 class="story-title" id="story-title"></h1>
+            <div class="story-body" id="story-body"></div>
+            <div class="story-footer hidden" id="story-footer">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;">— 已归档 —</span>
+                <button class="text-btn" onclick="closeModal('modal-story')">继续 <svg class="icon"><use href="#i-arrow-right"/></svg></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 集合 -->
+<div class="modal" id="modal-collection">
+    <div class="modal-header">
+        <div class="modal-title"><svg class="icon"><use href="#i-network"/></svg>MEMORY CONSTELLATION / 记忆星网</div>
+        <div class="col-tabs">
+            <button class="tab active" data-tab="map">星图</button>
+            <button class="tab" data-tab="archive">档案</button>
+            <button class="tab" data-tab="timeline">时间轴</button>
+        </div>
+        <button class="icon-btn" onclick="closeModal('modal-collection')"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+        <div class="col-body">
+            <div id="map-view">
+                <canvas id="constellation"></canvas>
+                <div class="map-tooltip hidden" id="map-tooltip"></div>
+            </div>
+            <div id="archive-view" class="hidden"></div>
+            <div id="timeline-view" class="hidden"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============== 数据库 ==============
+const DATABASE = {
+    fragments: [
+        { text: "时间在这个房间里，凝固成了一团[?]。", options: [
+            { word: "灰尘", card: { id: "c_dust", name: "灰尘", part1: "我看见时间的灰尘悬浮在半空，它是过去的遗骸，每一粒都曾是一个鲜活的瞬间。" } },
+            { word: "琥珀", card: { id: "c_amber", name: "琥珀", part1: "一切被包裹在金黄的琥珀中，温润而静谧地沉睡，连呼吸都化作光的涟漪。" } },
+            { word: "迷雾", card: { id: "c_fog", name: "迷雾", part1: "视线开始模糊，时间变成无法触及的迷雾，笼罩所有方向，我成了自己的回声。" } }
+        ]},
+        { text: "祂对我说，不要轻易去触碰那扇[?]的门。", options: [
+            { word: "燃烧", card: { id: "c_fire", name: "燃烧", part2: "那扇门背后燃烧着炽热的执念，一旦开启，便是焚身之火，可我依然渴望靠近。" } },
+            { word: "虚无", card: { id: "c_void", name: "虚无", part2: "门后什么也没有，只有令人窒息的真空，剥夺了声音、形状和重量。" } },
+            { word: "玻璃", card: { id: "c_glass", name: "玻璃", part2: "透明的阻隔最为致命，你能看见门后的美好，却永远无法抵达。" } }
+        ]},
+        { text: "这是一座用[?]建造的城市。", options: [
+            { word: "谎言", card: { id: "c_lie", name: "谎言", part1: "这座城市建立在华丽的谎言之上，每一块砖瓦都透着虚伪的光泽，居民们却乐于其中。" } },
+            { word: "记忆", card: { id: "c_memory", name: "记忆", part1: "街道由无数人的记忆拼凑而成，你走过的每一步，都是别人的人生在脚下流淌。" } },
+            { word: "雨", card: { id: "c_rain", name: "雨", part1: "整座城市由不停的雨建造，墙是水帘，路是溪流，人们在湿透中相互辨认。" } }
+        ]},
+        { text: "我终于学会了如何与[?]相处。", options: [
+            { word: "孤独", card: { id: "c_lonely", name: "孤独", part2: "我坐在角落，感受着它在我身边坐下。原来这并不冷，反而是一种深邃的自由。" } },
+            { word: "机器", card: { id: "c_machine", name: "机器", part2: "我听着心脏深处传来的机械咬合声，终于接受了自己正在被异化的事实。" } },
+            { word: "影子", card: { id: "c_shadow", name: "影子", part2: "影子比我更早醒来，比我更晚睡去。我学会让它先走，自己跟在后面。" } }
+        ]},
+        { text: "黎明前的最后一颗星，是[?]做的。", options: [
+            { word: "誓言", card: { id: "c_vow", name: "誓言", part1: "那颗星由所有未兑现的誓言凝结而成，闪烁的频率，是它们逐一断裂的声音。" } },
+            { word: "眼泪", card: { id: "c_tear", name: "眼泪", part1: "它是一滴永远不会落下的泪，悬在天幕，等待一个值得它坠落的人。" } }
+        ]}
+    ]
+};
+const ALL_CARDS = (() => {
+    const map = {};
+    DATABASE.fragments.forEach(f => f.options.forEach(o => map[o.card.id] = o.card));
+    return map;
+})();
+const TOTAL_NODES = Object.keys(ALL_CARDS).length;
+
+function generateStory(a, b) {
+    const title = `关于 ${a.name} 与 ${b.name}`;
+    const p1 = a.part1 || `我带着「${a.name}」的印记，走入一片荒芜的平原。`;
+    const p2 = b.part2 || `这里，「${b.name}」的气息逐渐蔓延，将一切重新着色。`;
+    const p3 = `当两种思绪在脑海中剧烈碰撞，原有的边界消融。${a.name}与${b.name}从此互为表里——这是此刻的真实。`;
+    return { id: `s_${[a.id,b.id].sort().join('_')}`, title, content: [p1, p2, p3], ts: Date.now() };
+}
+
+// ============== 状态 ==============
+const INV_LIMIT = 7;
+const SAVE_KEY = 'says_save_v4';
+let state = { inventory: [], stories: [], nodes: [], logs: [], milestones: [] };
+let currentSlots = [null, null];
+let activeFragment = null;
+let crystals = [];
+let soundOn = true;
+let running = true;
+
+function save() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function load() {
+    try {
+        const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+        if (s) Object.assign(state, s);
+    } catch(e) {}
+}
+function reset() {
+    if (!confirm('确认抹除所有记忆痕迹？')) return;
+    localStorage.removeItem(SAVE_KEY);
+    state = { inventory: [], stories: [], nodes: [], logs: [], milestones: [] };
+    currentSlots = [null, null];
+    document.querySelectorAll('.slot').forEach(s => {
+        s.classList.remove('filled');
+        const txt = s.querySelector('.slot-text'); if (txt) txt.remove();
+    });
+    renderAll();
+    toast('SYSTEM', '记忆已归零');
+}
+
+// ============== 音效 ==============
+let audioCtx = null;
+function audio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+function tone(freq, dur=0.15, type='sine', vol=0.05) {
+    if (!soundOn) return;
+    try {
+        const ctx = audio();
+        const osc = ctx.createOscillator(), g = ctx.createGain();
+        osc.type = type; osc.frequency.value = freq;
+        g.gain.setValueAtTime(vol, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + dur);
+    } catch(e) {}
+}
+function sfx(n) {
+    if (n === 'shatter') { tone(1200, 0.15, 'triangle', 0.04); setTimeout(()=>tone(1800, 0.2, 'sine', 0.03), 40); }
+    if (n === 'pick') tone(800, 0.08, 'sine', 0.04);
+    if (n === 'place') tone(500, 0.12, 'triangle', 0.05);
+    if (n === 'fuse') [300,450,600,900,1200].forEach((f,i)=>setTimeout(()=>tone(f, 0.3, 'sine', 0.04), i*80));
+    if (n === 'click') tone(1400, 0.05, 'sine', 0.025);
+    if (n === 'toast') tone(1000, 0.1, 'sine', 0.03);
+}
+
+// ============== Toast ==============
+function toast(title, msg) {
+    sfx('toast');
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `
+        <div class="toast-bar"></div>
+        <div class="toast-icon"><svg class="icon"><use href="#i-sparkle"/></svg></div>
+        <div class="toast-body">
+            <div class="toast-title">${title}</div>
+            <div class="toast-msg">${msg}</div>
+        </div>`;
+    wrap.appendChild(t);
+    setTimeout(()=>t.remove(), 4200);
+}
+
+// ============== 主题 / 音效 ==============
+function initTheme() {
+    const saved = localStorage.getItem('theme') || 'light';
+    setTheme(saved);
+}
+function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('theme', t);
+    const btn = document.getElementById('btn-theme');
+    btn.querySelector('use').setAttribute('href', t === 'dark' ? '#i-sun' : '#i-moon');
+}
+document.getElementById('btn-theme').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    setTheme(cur === 'dark' ? 'light' : 'dark');
+    if (!document.getElementById('modal-collection').classList.contains('hidden')) drawMap();
+});
+document.getElementById('btn-sound').addEventListener('click', e => {
+    soundOn = !soundOn;
+    e.currentTarget.querySelector('use').setAttribute('href', soundOn ? '#i-sound' : '#i-mute');
+});
+
+// ============== 点击涟漪 ==============
+document.addEventListener('click', e => {
+    if (e.target.closest('input')) return;
+    const r = document.createElement('div');
+    r.className = 'click-ripple';
+    r.style.left = e.clientX + 'px';
+    r.style.top = e.clientY + 'px';
+    document.body.appendChild(r);
+    setTimeout(()=>r.remove(), 800);
+    sfx('click');
+});
+
+// ============== 菜单 ==============
+let menuEl = null;
+function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; } }
+document.getElementById('btn-menu').addEventListener('click', e => {
+    e.stopPropagation();
+    if (menuEl) { closeMenu(); return; }
+    menuEl = document.createElement('div');
+    menuEl.className = 'menu-pop';
+    menuEl.innerHTML = `
+        <h6>操作</h6>
+        <button data-act="summon"><svg class="icon"><use href="#i-plus"/></svg>召唤晶体<span class="kbd" style="margin-left:auto;">R</span></button>
+        <button data-act="cmdk"><svg class="icon"><use href="#i-search"/></svg>命令面板<span class="kbd" style="margin-left:auto;">⌘K</span></button>
+        <button data-act="export"><svg class="icon"><use href="#i-download"/></svg>导出存档</button>
+        <hr>
+        <h6>快捷键</h6>
+        <button data-act="help"><svg class="icon"><use href="#i-keyboard"/></svg>查看快捷键</button>
+        <hr>
+        <button class="danger" data-act="reset"><svg class="icon"><use href="#i-trash"/></svg>抹除记忆</button>
+    `;
+    const r = e.currentTarget.getBoundingClientRect();
+    menuEl.style.top = (r.bottom + 8) + 'px';
+    menuEl.style.right = (innerWidth - r.right) + 'px';
+    document.body.appendChild(menuEl);
+    menuEl.addEventListener('click', ev => {
+        const b = ev.target.closest('button');
+        if (!b) return;
+        const act = b.dataset.act;
+        closeMenu();
+        if (act === 'summon') spawnCrystal();
+        if (act === 'cmdk') openCmdk();
+        if (act === 'export') {
+            navigator.clipboard?.writeText(localStorage.getItem(SAVE_KEY) || '{}');
+            toast('EXPORT', '存档已复制到剪贴板');
+        }
+        if (act === 'help') toast('KEYS', 'R 召唤 · T 主题 · M 静音 · ⌘K 命令 · ESC 关闭');
+        if (act === 'reset') reset();
+    });
+});
+document.addEventListener('click', e => {
+    if (menuEl && !menuEl.contains(e.target) && !e.target.closest('#btn-menu')) closeMenu();
+});
+
+// ============== 命令面板 ==============
+const CMDK_ITEMS = [
+    { id: 'summon', label: '召唤新的晶体', kbd: 'R', act: () => spawnCrystal() },
+    { id: 'theme', label: '切换主题（明/暗）', kbd: 'T', act: () => document.getElementById('btn-theme').click() },
+    { id: 'sound', label: '切换音效', kbd: 'M', act: () => document.getElementById('btn-sound').click() },
+    { id: 'col', label: '打开记忆星网', act: () => document.getElementById('btn-collection').click() },
+    { id: 'clear', label: '清空祭坛', act: () => { clearSlots(); toast('ALTAR', '祭坛已清空'); } },
+    { id: 'export', label: '导出存档到剪贴板', act: () => { navigator.clipboard?.writeText(localStorage.getItem(SAVE_KEY)||'{}'); toast('EXPORT','存档已复制'); } },
+    { id: 'reset', label: '抹除所有记忆', act: reset },
+];
+let cmdkIdx = 0;
+function openCmdk() {
+    document.getElementById('cmdk').classList.add('open');
+    const inp = document.getElementById('cmdk-input');
+    inp.value = ''; inp.focus();
+    renderCmdk('');
+}
+function closeCmdk() { document.getElementById('cmdk').classList.remove('open'); }
+function renderCmdk(q) {
+    const list = document.getElementById('cmdk-list');
+    const items = CMDK_ITEMS.filter(i => !q || i.label.toLowerCase().includes(q.toLowerCase()));
+    cmdkIdx = 0;
+    list.innerHTML = items.map((it, i) => `
+        <div class="cmdk-item ${i===0?'active':''}" data-idx="${i}">
+            <svg class="icon"><use href="#i-arrow-right"/></svg>
+            ${it.label}
+            ${it.kbd ? `<span class="cmd-kbd">${it.kbd}</span>` : ''}
+        </div>
+    `).join('') || '<div style="padding:20px;color:var(--muted);font-size:12px;text-align:center;">无匹配结果</div>';
+    list.querySelectorAll('.cmdk-item').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            cmdkIdx = +el.dataset.idx;
+            list.querySelectorAll('.cmdk-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+        });
+        el.addEventListener('click', () => { items[cmdkIdx]?.act(); closeCmdk(); });
+    });
+    list.dataset.items = JSON.stringify(items.map(i=>i.id));
+}
+document.getElementById('btn-cmdk').addEventListener('click', openCmdk);
+document.getElementById('cmdk').addEventListener('click', e => { if (e.target.id === 'cmdk') closeCmdk(); });
+document.getElementById('cmdk-input').addEventListener('input', e => renderCmdk(e.target.value));
+document.getElementById('cmdk-input').addEventListener('keydown', e => {
+    const items = document.querySelectorAll('.cmdk-item');
+    if (e.key === 'ArrowDown') { e.preventDefault(); cmdkIdx = Math.min(items.length-1, cmdkIdx+1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); cmdkIdx = Math.max(0, cmdkIdx-1); }
+    else if (e.key === 'Enter') {
+        const q = e.target.value;
+        const filtered = CMDK_ITEMS.filter(i => !q || i.label.toLowerCase().includes(q.toLowerCase()));
+        filtered[cmdkIdx]?.act(); closeCmdk(); return;
+    } else return;
+    items.forEach(el => el.classList.remove('active'));
+    items[cmdkIdx]?.classList.add('active');
+    items[cmdkIdx]?.scrollIntoView({ block: 'nearest' });
+});
+
+// ============== 冰晶 ==============
+const stage = document.getElementById('stage');
+class Crystal {
+    constructor() {
+        this.el = document.createElement('div');
+        this.el.className = 'crystal';
+        this.el.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="12,2 22,12 12,22 2,12"/></svg>`;
+        this.x = Math.random()*(innerWidth-100)+50;
+        this.y = Math.random()*(innerHeight-240)+100;
+        const sp = 0.25 + Math.random()*0.35, a = Math.random()*Math.PI*2;
+        this.vx = Math.cos(a)*sp; this.vy = Math.sin(a)*sp;
+        this.life = 1000 + Math.random()*500; this.t = Math.random()*100;
+        this.rot = Math.random()*360;
+        this.el.addEventListener('click', e => { e.stopPropagation(); this.shatter(); });
+        this.el.addEventListener('contextmenu', e => { e.preventDefault(); this.inspect(); });
+        stage.appendChild(this.el);
+    }
+    update() {
+        this.life--; this.t += 0.02;
+        if (this.x <= 0 || this.x >= innerWidth - 40) this.vx *= -1;
+        if (this.y <= 70 || this.y >= innerHeight - 100) this.vy *= -1;
+        this.x += this.vx + Math.sin(this.t)*0.3;
+        this.y += this.vy + Math.cos(this.t*0.7)*0.2;
+        this.rot += 0.3;
+        this.el.style.transform = `translate(${this.x}px,${this.y}px) rotate(${this.rot}deg)`;
+        if (this.life < 200 && !this.el.classList.contains('decaying')) this.el.classList.add('decaying');
+        if (this.life <= 0) this.kill();
+    }
+    inspect() {
+        toast('CRYSTAL', `信号强度 ${Math.floor(this.life)}/1500 · 可点击触发解析`);
+    }
+    shatter() {
+        sfx('shatter');
+        for (let i=0; i<10; i++) {
+            const p = document.createElement('div');
+            p.className = 'shatter-p';
+            p.style.left = (this.x+14)+'px'; p.style.top = (this.y+14)+'px';
+            p.style.transition = 'all 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
+            stage.appendChild(p);
+            const ang = (i/10)*Math.PI*2, d = 50 + Math.random()*40;
+            requestAnimationFrame(()=>{
+                p.style.left = (this.x+14+Math.cos(ang)*d)+'px';
+                p.style.top = (this.y+14+Math.sin(ang)*d)+'px';
+                p.style.opacity = '0';
+            });
+            setTimeout(()=>p.remove(), 800);
+        }
+        this.el.style.opacity = '0';
+        this.kill(300); triggerDecode();
+    }
+    kill(delay=0) {
+        const i = crystals.indexOf(this); if (i>-1) crystals.splice(i,1);
+        setTimeout(()=>this.el.remove(), delay);
+    }
+}
+function spawnCrystal() { if (crystals.length < 6) crystals.push(new Crystal()); }
+function loop() {
+    if (running) crystals.forEach(c => c.update());
+    requestAnimationFrame(loop);
+}
+setInterval(()=>{ if (running && crystals.length < 3) spawnCrystal(); }, 4500);
+document.addEventListener('visibilitychange', () => { running = !document.hidden; });
+
+// ============== 解码 ==============
+function triggerDecode() {
+    activeFragment = DATABASE.fragments[Math.floor(Math.random()*DATABASE.fragments.length)];
+    const modal = document.getElementById('modal-decrypt');
+    const txt = document.getElementById('decode-text');
+    const opts = document.getElementById('decode-options');
+    txt.innerHTML = activeFragment.text.replace('[?]', '<span class="blank"></span>');
+    txt.classList.add('blur');
+    opts.innerHTML = '';
+    openModal('modal-decrypt');
+    setTimeout(()=>{
+        txt.classList.remove('blur');
+        activeFragment.options.forEach((o,i)=>{
+            const b = document.createElement('button');
+            b.className = 'opt-btn';
+            b.style.animationDelay = (i*0.1 + 0.2) + 's';
+            b.innerHTML = `<span>${o.word}</span>`;
+            b.onclick = () => confirmDecode(o);
+            opts.appendChild(b);
+        });
+    }, 500);
+}
+function confirmDecode(opt) {
+    sfx('place');
+    const txt = document.getElementById('decode-text');
+    txt.innerHTML = activeFragment.text.replace('[?]', `<span class="blank filled">${opt.word}</span>`);
+    document.getElementById('decode-options').innerHTML = '';
+    setTimeout(()=>{
+        addInventory(opt.card);
+        closeModal('modal-decrypt');
+    }, 1000);
+}
+
+// ============== 库存 & 拖拽 ==============
+function addInventory(card) {
+    const isNew = !state.nodes.includes(card.id);
+    if (isNew) state.nodes.push(card.id);
+    if (state.inventory.length >= INV_LIMIT) state.inventory.shift();
+    state.inventory.push(card);
+    if (isNew) toast('DISCOVERY', `首次拾得「${card.name}」`);
+    renderAll(); save();
+}
+function renderDock() {
+    const list = document.getElementById('dock-list');
+    const cnt = document.getElementById('dock-count');
+    cnt.textContent = `${state.inventory.length} / ${INV_LIMIT}`;
+    cnt.classList.toggle('full', state.inventory.length >= INV_LIMIT);
+    if (state.inventory.length === 0) {
+        list.innerHTML = '<div class="dock-empty">等待晶体析出</div>';
+        return;
+    }
+    list.innerHTML = '';
+    state.inventory.forEach((c, i) => {
+        const f = document.createElement('div');
+        f.className = 'fragment';
+        f.textContent = c.name;
+        f.dataset.id = c.id;
+        f.style.animationDelay = (i * 0.05) + 's';
+        f.addEventListener('pointerdown', startDrag);
+        list.appendChild(f);
+    });
+}
+function renderProgress() {
+    document.getElementById('prog-num').textContent = state.nodes.length;
+    document.getElementById('prog-total').textContent = TOTAL_NODES;
+    const bar = document.getElementById('prog-bar');
+    const circumference = 2 * Math.PI * 8;
+    bar.setAttribute('stroke-dasharray', circumference);
+    bar.setAttribute('stroke-dashoffset', circumference * (1 - state.nodes.length / TOTAL_NODES));
+}
+function renderLog() {
+    const list = document.getElementById('log-list');
+    if (state.logs.length === 0) {
+        list.innerHTML = '<div class="log-entry empty">暂无回响记录</div>'; return;
+    }
+    list.innerHTML = state.logs.slice(0, 5).map((l, i) => `
+        <div class="log-entry" style="animation-delay:${i*0.05}s;opacity:${1-i*0.15}">
+            <span class="log-time">${l.t}</span>${l.m}
+        </div>
+    `).join('');
+}
+
+// 拖拽
+let dragItem = null, dragClone = null;
+function startDrag(e) {
+    e.preventDefault();
+    sfx('pick');
+    dragItem = e.currentTarget;
+    const r = dragItem.getBoundingClientRect();
+    dragClone = dragItem.cloneNode(true);
+    dragClone.classList.add('dragging');
+    dragClone.style.width = r.width + 'px';
+    dragClone.style.height = r.height + 'px';
+    document.body.appendChild(dragClone);
+    dragItem.style.opacity = '0.2';
+    const ox = e.clientX - r.left, oy = e.clientY - r.top;
+    let snapSlot = null;
+
+    const move = ev => {
+        let px = ev.clientX - ox, py = ev.clientY - oy;
+        snapSlot = null;
+        document.querySelectorAll('.slot').forEach(s => s.classList.remove('snap'));
+        document.querySelectorAll('.slot').forEach(slot => {
+            if (slot.classList.contains('filled')) return;
+            const sr = slot.getBoundingClientRect();
+            const cx = sr.left + sr.width/2, cy = sr.top + sr.height/2;
+            if (Math.hypot(ev.clientX - cx, ev.clientY - cy) < 80) {
+                snapSlot = slot;
+                slot.classList.add('snap');
+                px = cx - dragClone.offsetWidth/2; py = cy - dragClone.offsetHeight/2;
+            }
+        });
+        dragClone.style.left = px + 'px';
+        dragClone.style.top = py + 'px';
+    };
+    const end = () => {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', end);
+        document.querySelectorAll('.slot').forEach(s => s.classList.remove('snap'));
+        if (snapSlot) {
+            const idx = parseInt(snapSlot.dataset.slot) - 1;
+            placeSlot(idx, dragItem.dataset.id);
+            state.inventory = state.inventory.filter(c => c.id !== dragItem.dataset.id);
+            save();
+        }
+        dragClone.remove();
+        if (dragItem) dragItem.style.opacity = '';
+        renderAll();
+        dragItem = null; dragClone = null;
+    };
+    move(e);
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', end);
+}
+
+function placeSlot(idx, id) {
+    sfx('place');
+    const card = ALL_CARDS[id];
+    if (!card) return;
+    currentSlots[idx] = card;
+    const slot = document.getElementById(`slot-${idx+1}`);
+    const existing = slot.querySelector('.slot-text');
+    if (existing) existing.remove();
+    const tx = document.createElement('span');
+    tx.className = 'slot-text';
+    tx.textContent = card.name;
+    slot.appendChild(tx);
+    slot.classList.add('filled');
+    checkAltar();
+}
+function clearSlot(idx) {
+    const card = currentSlots[idx];
+    if (!card) return;
+    if (state.inventory.length < INV_LIMIT) state.inventory.push(card);
+    currentSlots[idx] = null;
+    const slot = document.getElementById(`slot-${idx+1}`);
+    const tx = slot.querySelector('.slot-text'); if (tx) tx.remove();
+    slot.classList.remove('filled');
+    renderAll(); checkAltar(); save();
+}
+function clearSlots() { clearSlot(0); clearSlot(1); }
+document.querySelectorAll('.slot').forEach(slot => {
+    slot.addEventListener('click', function(e) {
+        if (this.classList.contains('filled')) clearSlot(parseInt(this.dataset.slot)-1);
+    });
+});
+function checkAltar() {
+    const ready = currentSlots[0] && currentSlots[1];
+    document.getElementById('altar-action').classList.toggle('visible', !!ready);
+    document.getElementById('altar-ring').classList.toggle('evolved', state.stories.length >= 3);
+}
+
+// ============== 合成（修复） ==============
+async function synthesize() {
+    if (!currentSlots[0] || !currentSlots[1]) return;
+    sfx('fuse');
+    const a = currentSlots[0], b = currentSlots[1];
+    document.getElementById('altar-action').classList.remove('visible');
+    const s1 = document.getElementById('slot-1'), s2 = document.getElementById('slot-2');
+    s1.classList.add('slot-merge-l');
+    s2.classList.add('slot-merge-r');
+    // 闪光
+    const flash = document.getElementById('merge-flash');
+    setTimeout(() => { flash.classList.add('active'); }, 700);
+    setTimeout(() => { flash.classList.remove('active'); }, 2200);
+    // 等待合成动画
+    await new Promise(r => setTimeout(r, 1200));
+    // 清理
+    s1.classList.remove('slot-merge-l'); s1.classList.remove('filled');
+    s2.classList.remove('slot-merge-r'); s2.classList.remove('filled');
+    const t1 = s1.querySelector('.slot-text'); if (t1) t1.remove();
+    const t2 = s2.querySelector('.slot-text'); if (t2) t2.remove();
+    currentSlots = [null, null];
+    // 生成故事
+    setTimeout(() => revealStory(a, b), 500);
+}
+document.getElementById('btn-synth').addEventListener('click', synthesize);
+
+// ============== 故事 ==============
+async function typeWriter(el, text, speed=30) {
+    return new Promise(res => {
+        el.classList.add('type-cursor');
+        let i = 0;
+        const tick = () => {
+            if (i <= text.length) {
+                el.textContent = text.slice(0, i++);
+                setTimeout(tick, speed);
+            } else {
+                el.classList.remove('type-cursor'); res();
+            }
+        };
+        tick();
+    });
+}
+async function revealStory(a, b) {
+    const story = generateStory(a, b);
+    const isNew = !state.stories.find(s => s.id === story.id);
+    if (isNew) state.stories.push(story);
+    state.logs.unshift({ t: new Date().toLocaleTimeString('zh-CN',{hour12:false}), m: `「${a.name}」× 「${b.name}」` });
+    state.logs = state.logs.slice(0, 10);
+    save(); renderAll();
+    checkMilestones(isNew);
+    // 显示
+    document.getElementById('story-meta').textContent = `CHAPTER ${String(state.stories.length).padStart(3,'0')} · ${isNew?'NEW':'ARCHIVED'}`;
+    document.getElementById('story-title').textContent = story.title;
+    const body = document.getElementById('story-body');
+    body.innerHTML = '';
+    document.getElementById('story-footer').classList.add('hidden');
+    openModal('modal-story');
+    await new Promise(r => setTimeout(r, 800));
+    for (const p of story.content) {
+        const pEl = document.createElement('p');
+        body.appendChild(pEl);
+        await typeWriter(pEl, p, 32);
+        await new Promise(r => setTimeout(r, 300));
+    }
+    document.getElementById('story-footer').classList.remove('hidden');
+}
+function showArchivedStory(story) {
+    document.getElementById('story-meta').textContent = `ARCHIVED · ${new Date(story.ts).toLocaleDateString()}`;
+    document.getElementById('story-title').textContent = story.title;
+    const body = document.getElementById('story-body');
+    body.innerHTML = story.content.map(p => `<p>${p}</p>`).join('');
+    document.getElementById('story-footer').classList.remove('hidden');
+    closeModal('modal-collection');
+    setTimeout(() => openModal('modal-story'), 300);
+}
+
+function checkMilestones(isNew) {
+    if (!isNew) return;
+    const c = state.stories.length;
+    const m = state.milestones;
+    if (c === 1 && !m.includes('m1')) { m.push('m1'); toast('MILESTONE', '初次共鸣已记录'); }
+    if (c === 3 && !m.includes('m3')) { m.push('m3'); toast('MILESTONE', '星河泛起涟漪'); }
+    if (c === 6 && !m.includes('m6')) { m.push('m6'); toast('MILESTONE', '祭坛已觉醒'); }
+    if (state.nodes.length === TOTAL_NODES && !m.includes('mAll')) { m.push('mAll'); toast('COMPLETION', '所有节点皆已显形'); }
+}
+
+// ============== 模态框 ==============
+function openModal(id) {
+    const m = document.getElementById(id);
+    m.classList.remove('hidden');
+    requestAnimationFrame(() => m.classList.add('open'));
+}
+function closeModal(id) {
+    const m = document.getElementById(id);
+    m.classList.remove('open');
+    setTimeout(() => m.classList.add('hidden'), 800);
+}
+
+// ============== 集合视图 ==============
+document.getElementById('btn-collection').addEventListener('click', () => {
+    openModal('modal-collection');
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'map'));
+    showTab('map');
+    setTimeout(drawMap, 900);
+});
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    showTab(t.dataset.tab);
+}));
+function showTab(tab) {
+    document.getElementById('map-view').classList.toggle('hidden', tab !== 'map');
+    document.getElementById('archive-view').classList.toggle('hidden', tab !== 'archive');
+    document.getElementById('timeline-view').classList.toggle('hidden', tab !== 'timeline');
+    if (tab === 'map') setTimeout(drawMap, 50);
+    if (tab === 'archive') renderArchive();
+    if (tab === 'timeline') renderTimeline();
+}
+
+// 星图
+const cmap = document.getElementById('constellation');
+const cctx = cmap.getContext('2d');
+let nodePos = {};
+function drawMap() {
+    const wrap = document.getElementById('map-view');
+    cmap.width = wrap.clientWidth; cmap.height = wrap.clientHeight;
+    nodePos = {};
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const nodeClr = isDark ? '#fafafa' : '#0a0a0a';
+    const lineClr = isDark ? 'rgba(250,250,250,0.25)' : 'rgba(10,10,10,0.25)';
+    const bgGrid = isDark ? 'rgba(250,250,250,0.04)' : 'rgba(10,10,10,0.04)';
+
+    // 底纹
+    cctx.clearRect(0, 0, cmap.width, cmap.height);
+    cctx.strokeStyle = bgGrid; cctx.lineWidth = 1;
+    for (let x = 0; x < cmap.width; x += 40) { cctx.beginPath(); cctx.moveTo(x,0); cctx.lineTo(x,cmap.height); cctx.stroke(); }
+    for (let y = 0; y < cmap.height; y += 40) { cctx.beginPath(); cctx.moveTo(0,y); cctx.lineTo(cmap.width,y); cctx.stroke(); }
+
+    const nodes = state.nodes;
+    if (nodes.length === 0) {
+        cctx.fillStyle = isDark ? '#525252' : '#a3a3a3';
+        cctx.font = '13px "Noto Serif SC"'; cctx.textAlign = 'center';
+        cctx.fillText('—— 尚未发现任何节点 ——', cmap.width/2, cmap.height/2);
+        return;
+    }
+    nodes.forEach((id, i) => {
+        const ang = (i/nodes.length) * Math.PI * 2 - Math.PI/2;
+        const rad = Math.min(cmap.width, cmap.height) * 0.32;
+        nodePos[id] = {
+            x: cmap.width/2 + Math.cos(ang)*rad,
+            y: cmap.height/2 + Math.sin(ang)*rad,
+            name: ALL_CARDS[id].name
+        };
+    });
+    // 连线
+    cctx.strokeStyle = lineClr; cctx.lineWidth = 1;
+    state.stories.forEach(s => {
+        const [_, id1a, id1b, id2a, id2b] = s.id.split('_');
+        const ida = id1a+'_'+id1b, idb = id2a+'_'+id2b;
+        if (nodePos[ida] && nodePos[idb]) {
+            cctx.beginPath();
+            cctx.moveTo(nodePos[ida].x, nodePos[ida].y);
+            cctx.lineTo(nodePos[idb].x, nodePos[idb].y);
+            cctx.stroke();
+        }
+    });
+    // 节点
+    cctx.textAlign = 'left';
+    Object.values(nodePos).forEach(p => {
+        cctx.beginPath(); cctx.arc(p.x, p.y, 14, 0, Math.PI*2);
+        cctx.fillStyle = isDark ? '#121212' : '#ffffff'; cctx.fill();
+        cctx.strokeStyle = nodeClr; cctx.lineWidth = 1.5; cctx.stroke();
+        cctx.beginPath(); cctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+        cctx.fillStyle = nodeClr; cctx.fill();
+        cctx.fillStyle = nodeClr;
+        cctx.font = '500 12px "Noto Serif SC"';
+        cctx.fillText(p.name, p.x + 22, p.y + 4);
+    });
+}
+cmap.addEventListener('mousemove', e => {
+    const r = cmap.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    let hover = null;
+    for (const id in nodePos) {
+        if (Math.hypot(mx - nodePos[id].x, my - nodePos[id].y) < 18) { hover = nodePos[id]; break; }
+    }
+    const tip = document.getElementById('map-tooltip');
+    if (hover) {
+        const relatedStories = state.stories.filter(s => s.id.includes(Object.keys(nodePos).find(k => nodePos[k] === hover)));
+        tip.textContent = `${hover.name} · 共鸣 ×${relatedStories.length}`;
+        tip.style.left = hover.x + 'px'; tip.style.top = hover.y + 'px';
+        tip.classList.remove('hidden');
+        cmap.style.cursor = 'pointer';
+    } else {
+        tip.classList.add('hidden'); cmap.style.cursor = 'default';
+    }
+});
+window.addEventListener('resize', () => {
+    if (!document.getElementById('modal-collection').classList.contains('hidden')) drawMap();
+});
+
+function renderArchive() {
+    const v = document.getElementById('archive-view');
+    if (state.stories.length === 0) {
+        v.innerHTML = '<div class="archive-empty">—— 尚未解锁任何故事 ——</div>'; return;
+    }
+    v.innerHTML = state.stories.slice().reverse().map((s, i) => `
+        <div class="archive-card" data-id="${s.id}">
+            <div class="idx">CHAPTER ${String(state.stories.length - i).padStart(3,'0')}</div>
+            <h4>${s.title}</h4>
+            <p>${s.content[0]}</p>
+        </div>
+    `).join('');
+    v.querySelectorAll('.archive-card').forEach(c => {
+        c.addEventListener('click', () => {
+            const s = state.stories.find(x => x.id === c.dataset.id);
+            if (s) showArchivedStory(s);
+        });
+    });
+}
+function renderTimeline() {
+    const v = document.getElementById('timeline-view');
+    if (state.stories.length === 0) {
+        v.innerHTML = '<div class="archive-empty">—— 尚无时间记录 ——</div>'; return;
+    }
+    v.innerHTML = state.stories.slice().reverse().map(s => {
+        const d = new Date(s.ts);
+        return `
+            <div class="tl-item" data-id="${s.id}">
+                <div class="tl-time">${d.toLocaleDateString()}<br>${d.toLocaleTimeString('zh-CN',{hour12:false})}</div>
+                <div>
+                    <h4>${s.title}</h4>
+                    <p>${s.content[0]}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+    v.querySelectorAll('.tl-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const s = state.stories.find(x => x.id === el.dataset.id);
+            if (s) showArchivedStory(s);
+        });
+    });
+}
+
+// ============== 渲染总控 ==============
+function renderAll() { renderDock(); renderProgress(); renderLog(); }
+
+// ============== 快捷键 ==============
+window.addEventListener('keydown', e => {
+    const cmdkOpen = document.getElementById('cmdk').classList.contains('open');
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); cmdkOpen ? closeCmdk() : openCmdk(); return; }
+    if (cmdkOpen) { if (e.key === 'Escape') closeCmdk(); return; }
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'r' || e.key === 'R') spawnCrystal();
+    if (e.key === 't' || e.key === 'T') document.getElementById('btn-theme').click();
+    if (e.key === 'm' || e.key === 'M') document.getElementById('btn-sound').click();
+    if (e.key === 'Enter' && currentSlots[0] && currentSlots[1]) synthesize();
+    if (e.key === 'Escape') {
+        ['modal-decrypt','modal-story','modal-collection'].forEach(id => {
+            if (!document.getElementById(id).classList.contains('hidden')) closeModal(id);
+        });
+        closeMenu();
+    }
+});
+
+// ============== 启动 ==============
+initTheme();
+load();
+renderAll();
+loop();
+
+// 开场
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('intro-screen').classList.add('fade-out');
+        document.getElementById('app').classList.add('ready');
+        setTimeout(() => {
+            document.getElementById('intro-screen').remove();
+            for (let i=0; i<3; i++) setTimeout(spawnCrystal, i*200);
+            if (state.stories.length > 0) {
+                setTimeout(() => toast('WELCOME', `已收录 ${state.stories.length} 段叙事`), 600);
+            }
+        }, 1200);
+    }, 3600);
+});
+</script>
+</body>
+</html>
